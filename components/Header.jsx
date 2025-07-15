@@ -1,59 +1,17 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/components/CartContext";
-import { getAuthToken, clearAuthToken } from "@/utils/auth";
-import jwt from "jsonwebtoken";
-import { toast } from "react-toastify";
+import { useAuth } from "@/utils/useAuth";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [userName, setUserName] = useState("Guest");
   const { cartItems } = useCart();
+  const { isAuthenticated, user, logout } = useAuth();
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
   const pathname = usePathname();
-
-  useEffect(() => {
-    const token = getAuthToken();
-    if (token) {
-      try {
-        const decoded = jwt.decode(token);
-        if (!decoded || !decoded.exp) {
-          throw new Error("Invalid token");
-        }
-        const currentTime = Math.floor(Date.now() / 1000); 
-        if (decoded.exp < currentTime) {
-          toast.error("Your session has expired. Please log in again.");
-          clearAuthToken();
-          setIsLoggedIn(false);
-          setUserName("Guest");
-        } else {
-          setIsLoggedIn(true);
-          setUserName(decoded.username || "User");
-        }
-      } catch (error) {
-        console.error("Error decoding token:", error);
-        toast.error("Authentication error. Please log in again.");
-        clearAuthToken();
-        setIsLoggedIn(false);
-        setUserName("Guest");
-      }
-    } else {
-      setIsLoggedIn(false);
-      setUserName("Guest");
-    }
-  }, []);
-
-  const logout = () => {
-    clearAuthToken();
-    setIsLoggedIn(false);
-    setUserDropdownOpen(false);
-    setUserName("Guest");
-    toast.success("Logged out successfully!");
-  };
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -111,7 +69,7 @@ export default function Header() {
             </span>
           </Link>
 
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <div className="relative">
               <button
                 className="text-gray-700 flex items-center"
@@ -131,7 +89,9 @@ export default function Header() {
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                   />
                 </svg>
-                <span className="hidden sm:inline">{userName}</span>
+                <span className="hidden sm:inline">
+                  {user?.username || "User"}
+                </span>
               </button>
               {userDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">

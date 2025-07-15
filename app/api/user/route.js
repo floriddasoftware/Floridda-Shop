@@ -24,19 +24,17 @@ export async function GET(req) {
 
     return new Response(JSON.stringify(user), { status: 200 });
   } catch (error) {
-    console.error("Error fetching user:", error);
-    if (error.name === "TokenExpiredError") {
-      return new Response(JSON.stringify({ message: "Token expired" }), {
-        status: 401,
-      });
+    console.error("Error fetching user:", {
+      message: error.message,
+      stack: error.stack,
+    });
+    let message = "An unexpected error occurred.";
+    if (error.name === "JsonWebTokenError") {
+      message = "Invalid authentication token.";
+    } else if (error.name === "TokenExpiredError") {
+      message = "Authentication token has expired.";
     }
-    return new Response(
-      JSON.stringify({
-        message: "Internal server error",
-        error: error.message,
-      }),
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ message }), { status: 500 });
   }
 }
 
@@ -53,7 +51,6 @@ export async function PUT(req) {
     await connectToDatabase();
     const { username, email, phone, password } = await req.json();
 
-    // Basic validation
     if (username && username.length < 3) {
       return new Response(
         JSON.stringify({ message: "Username must be at least 3 characters" }),
@@ -116,14 +113,13 @@ export async function PUT(req) {
     };
     return new Response(JSON.stringify(updatedUser), { status: 200 });
   } catch (error) {
-    console.error("Error updating user:", error);
-    return new Response(
-      JSON.stringify({
-        message: "Internal server error",
-        error: error.message,
-      }),
-      { status: 500 }
-    );
+    console.error("Error updating user:", {
+      message: error.message,
+      stack: error.stack,
+    });
+    return new Response(JSON.stringify({ message: "Internal server error" }), {
+      status: 500,
+    });
   }
 }
 
@@ -149,13 +145,12 @@ export async function DELETE(req) {
       status: 200,
     });
   } catch (error) {
-    console.error("Error deleting user:", error);
-    return new Response(
-      JSON.stringify({
-        message: "Internal server error",
-        error: error.message,
-      }),
-      { status: 500 }
-    );
+    console.error("Error deleting user:", {
+      message: error.message,
+      stack: error.stack,
+    });
+    return new Response(JSON.stringify({ message: "Internal server error" }), {
+      status: 500,
+    });
   }
 }

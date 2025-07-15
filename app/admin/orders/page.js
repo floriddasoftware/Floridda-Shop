@@ -22,8 +22,11 @@ export default async function ManageOrdersPage({ searchParams }) {
 
     await connectToDatabase();
 
-    const page = parseInt(searchParams.page) || 1;
-    const limit = 10; 
+    const page =
+      searchParams && searchParams.page
+        ? parseInt(searchParams.page, 10) || 1
+        : 1;
+    const limit = 10;
     const skip = (page - 1) * limit;
 
     const [orders, totalOrders] = await Promise.all([
@@ -50,7 +53,10 @@ export default async function ManageOrdersPage({ searchParams }) {
       />
     );
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("Error fetching orders:", {
+      message: error.message,
+      stack: error.stack,
+    });
     return <Error message="Failed to load orders. Please try again." />;
   }
 }

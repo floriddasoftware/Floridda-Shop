@@ -11,6 +11,11 @@ export default function ClientManageUsers({ initialUsers }) {
   const [userToDelete, setUserToDelete] = useState(null);
 
   const handleDeleteUser = (id) => {
+    const user = users.find((u) => u._id === id);
+    if (user.email === "floriddasoftware@gmail.com") {
+      toast.error("Cannot delete the primary admin user.");
+      return;
+    }
     setUserToDelete(id);
     setShowDeleteModal(true);
   };
@@ -22,16 +27,17 @@ export default function ClientManageUsers({ initialUsers }) {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
+      const data = await response.json();
       if (response.ok) {
         setUsers(users.filter((u) => u._id !== userToDelete));
         toast.success("User deleted successfully!");
       } else {
-        toast.error("Failed to delete user");
-        setError("Failed to delete user");
+        setError(data.message || "Failed to delete user");
+        toast.error(data.message || "Failed to delete user");
       }
     } catch (error) {
-      toast.error("Error deleting user");
       setError("Error deleting user");
+      toast.error("Error deleting user");
     } finally {
       setShowDeleteModal(false);
       setUserToDelete(null);
@@ -42,9 +48,8 @@ export default function ClientManageUsers({ initialUsers }) {
     <AdminLayout>
       <div className="bg-white rounded-xl shadow-md p-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Manage Users</h1>
-        {error ? (
-          <p className="text-red-500">{error}</p>
-        ) : users.length === 0 ? (
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {users.length === 0 ? (
           <p className="text-gray-600">No users found.</p>
         ) : (
           <table className="w-full text-left">
@@ -68,6 +73,7 @@ export default function ClientManageUsers({ initialUsers }) {
                     <button
                       onClick={() => handleDeleteUser(user._id)}
                       className="text-red-500 hover:underline"
+                      disabled={user.email === "floriddasoftware@gmail.com"}
                     >
                       Delete
                     </button>
@@ -82,10 +88,10 @@ export default function ClientManageUsers({ initialUsers }) {
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-text mb-4">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
               Confirm Deletion
             </h3>
-            <p className="text-text mb-6">
+            <p className="text-gray-600 mb-6">
               Are you sure you want to delete this user? This action cannot be
               undone.
             </p>
@@ -98,7 +104,7 @@ export default function ClientManageUsers({ initialUsers }) {
               </button>
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1 bg-gray-300 text-text py-2 rounded-lg hover:bg-gray-400"
+                className="flex-1 bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400"
               >
                 Cancel
               </button>

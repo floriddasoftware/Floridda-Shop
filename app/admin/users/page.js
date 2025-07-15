@@ -7,7 +7,7 @@ import ClientManageUsers from "./ClientManageUsers";
 import Error from "@/components/Error";
 
 export default async function ManageUsersPage() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get("authToken")?.value;
 
   if (!token) {
@@ -30,7 +30,15 @@ export default async function ManageUsersPage() {
 
     return <ClientManageUsers initialUsers={plainUsers} />;
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error("Error fetching users:", {
+      message: error.message,
+      stack: error.stack,
+    });
+    if (error.name === "JsonWebTokenError") {
+      return (
+        <Error message="Invalid authentication token. Please log in again." />
+      );
+    }
     return <Error message="Failed to load users. Please try again." />;
   }
 }
