@@ -16,7 +16,7 @@ export default function AdminLayout({ children }) {
     const verifyAdmin = async () => {
       const token = getAuthToken();
       if (!token) {
-        router.push("/ login");
+        router.push("/login");
         return;
       }
       try {
@@ -85,7 +85,7 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
-      <header className="bg-blue-900 text-white p-4 fixed top-0 left-0 right-0 z-30 shadow-md">
+      <header className="bg-blue-900 text-white p-4 fixed top-0 left-0 right-0 h-16 z-30 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/admin" className="text-xl font-bold sm:text-2xl">
             Admin Dashboard
@@ -125,8 +125,9 @@ export default function AdminLayout({ children }) {
 
       <div className="flex flex-1 pt-16">
         <aside
-          className={`bg-blue-800 text-white p-4 fixed top-16 bottom-0 overflow-y-auto shadow-lg z-20
-            ${isSidebarCollapsed ? "w-12" : "w-40"} lg:w-40 lg:static`}
+          className={`fixed top-16 left-0 h-[calc(100vh-64px)] bg-blue-800 text-white p-4 overflow-y-auto z-20 transition-all duration-300 ${
+            isSidebarCollapsed ? "w-12" : "w-40 shadow-lg"
+          }`}
         >
           <nav>
             <ul className="space-y-4">
@@ -155,12 +156,11 @@ export default function AdminLayout({ children }) {
                 <li key={item.path}>
                   <Link
                     href={item.path}
-                    className={`flex items-center py-2 px-2 rounded text-sm sm:text-base
-                      ${
-                        pathname === item.path
-                          ? "bg-blue-700"
-                          : "hover:bg-blue-700"
-                      }`}
+                    className={`flex items-center py-2 px-2 rounded text-sm sm:text-base ${
+                      pathname === item.path
+                        ? "bg-blue-700"
+                        : "hover:bg-blue-700"
+                    }`}
                   >
                     <svg
                       className="w-6 h-6"
@@ -185,10 +185,10 @@ export default function AdminLayout({ children }) {
           </nav>
         </aside>
 
-        {/* Main Content */}
         <main
-          className={`flex-1 p-4 sm:p-6 bg-gray-100 min-h-[calc(100vh-4rem)] overflow-y-auto
-            ${isSidebarCollapsed ? "ml-12" : "ml-40"} lg:ml-40`}
+          className={`flex-1 p-6 bg-gray-100 min-h-[calc(100vh-64px)] overflow-y-auto w-full transition-all duration-300 ${
+            isSidebarCollapsed ? "ml-12" : "ml-40"
+          }`}
         >
           <div className="container mx-auto">{children}</div>
         </main>
