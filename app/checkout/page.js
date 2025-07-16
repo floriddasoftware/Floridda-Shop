@@ -4,12 +4,15 @@ import Layout from "@/components/Layout";
 import PaystackButton from "@/components/PaystackButton";
 import { useCart } from "@/components/CartContext";
 import { useRouter } from "next/navigation";
+import { getAuthToken } from "@/utils/auth";
+import { toast } from "react-toastify";
 
 export default function CheckoutPage() {
   const { cartItems, removeItem } = useCart();
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const subtotal = cartItems.reduce(
@@ -20,24 +23,26 @@ export default function CheckoutPage() {
   const total = subtotal + shipping;
 
   const handlePaymentSuccess = async (response) => {
-    const token = getAuthToken(); 
+    setLoading(true);
+    const token = getAuthToken();
     if (!token) {
-      alert("Please log in to complete your purchase.");
+      toast.error("Please log in to complete your purchase.");
       router.push("/login");
+      setLoading(false);
       return;
     }
 
     try {
-      // Check stock before proceeding
       for (const item of cartItems) {
         const productRes = await fetch(`/api/products/${item.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const product = await productRes.json();
         if (product.stock < item.quantity) {
-          alert(
+          toast.error(
             `Sorry, only ${product.stock} units of ${product.name} are available.`
           );
+          setLoading(false);
           return;
         }
       }
@@ -63,7 +68,6 @@ export default function CheckoutPage() {
       if (res.ok) {
         const { orderId } = await res.json();
 
-        // Update stock after order
         for (const item of cartItems) {
           await fetch(`/api/products/${item.id}/stock`, {
             method: "PUT",
@@ -76,13 +80,16 @@ export default function CheckoutPage() {
         }
 
         cartItems.forEach((item) => removeItem(item.id));
+        toast.success("Payment successful! Order placed.");
         router.push(`/confirmation?orderId=${orderId}`);
       } else {
-        alert("Failed to save order.");
+        toast.error("Failed to save order.");
       }
     } catch (error) {
       console.error("Error processing order:", error);
-      alert("An error occurred during payment processing.");
+      toast.error("An error occurred during payment processing.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,6 +100,13 @@ export default function CheckoutPage() {
   return (
     <Layout>
       <div className="min-h-screen flex flex-col bg-background">
+        {loading && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg">
+              <p className="text-text">Processing payment...</p>
+            </div>
+          </div>
+        )}
         <main className="flex-grow pt-16">
           <section className="py-6 bg-white shadow-sm">
             <div className="container mx-auto px-4">
@@ -115,7 +129,7 @@ export default function CheckoutPage() {
             <div className="container mx-auto px-4">
               <div className="flex flex-col lg:flex-row">
                 <div className="lg:w-2/3 lg:pr-8">
-                  <div className="bg-white rounded-xl shadow-md p-6 mb- personally6">
+                  <div className="bg-white rounded-xl shadow-md p-6 mb-6">
                     <h2 className="text-xl font-bold text-text mb-4">
                       Billing Details
                     </h2>
@@ -130,6 +144,7 @@ export default function CheckoutPage() {
                           onChange={(e) => setFirstName(e.target.value)}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                           required
+                          disabled={loading}
                         />
                       </div>
                       <div>
@@ -142,6 +157,7 @@ export default function CheckoutPage() {
                           onChange={(e) => setLastName(e.target.value)}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                           required
+                          disabled={loading}
                         />
                       </div>
                       <div className="md:col-span-2">
@@ -154,6 +170,7 @@ export default function CheckoutPage() {
                           onChange={(e) => setEmail(e.target.value)}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                           required
+                          disabled={loading}
                         />
                       </div>
                     </div>
