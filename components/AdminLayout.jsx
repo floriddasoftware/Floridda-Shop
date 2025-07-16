@@ -10,6 +10,7 @@ export default function AdminLayout({ children }) {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const verifyAdmin = async () => {
@@ -46,6 +47,7 @@ export default function AdminLayout({ children }) {
   const handleLogout = () => {
     clearAuthToken();
     router.push("/login");
+    toast.success("Logged out successfully!");
   };
 
   if (loading) {
@@ -64,11 +66,11 @@ export default function AdminLayout({ children }) {
             Access Denied
           </h2>
           <p className="text-gray-700 mb-6">
-            You don't have permission to access this page
+            You don&apos;t have permission to access this page
           </p>
           <button
             onClick={() => router.push("/")}
-            className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
+            className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition duration-300"
           >
             Return to Home
           </button>
@@ -79,30 +81,63 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
-      <header className="bg-blue-900 text-white p-4 fixed top-0 left-0 right-0 z-10 shadow-md">
+      <header className="bg-blue-900 text-white p-4 fixed top-0 left-0 right-0 z-20 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/admin" className="text-2xl font-bold">
             Admin Dashboard
           </Link>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
-          >
-            Logout
-          </button>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-300"
+            >
+              Logout
+            </button>
+            <button
+              className="md:hidden text-white focus:outline-none"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              aria-label="Toggle sidebar"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d={
+                    isSidebarOpen
+                      ? "M6 18L18 6M6 6l12 12"
+                      : "M4 6h16M4 12h16M4 18h16"
+                  }
+                />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 
       <div className="flex flex-1 pt-16">
-        <aside className="w-64 bg-blue-800 text-white p-4 fixed top-16 bottom-0 overflow-y-auto shadow-lg">
+        <aside
+          className={`w-64 bg-blue-800 text-white p-4 fixed top-16 bottom-0 overflow-y-auto shadow-lg transform transition-transform duration-300 ease-in-out z-10 ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0 md:static md:w-64`}
+        >
           <nav>
             <ul className="space-y-4">
               <li>
                 <Link
                   href="/admin"
                   className={`block py-2 px-4 rounded ${
-                    pathname === "/admin" ? "bg-blue-700" : "hover:bg-blue-700"
+                    pathname === "/admin"
+                      ? "bg-blue-700"
+                      : "hover:bg-blue-700 transition duration-200"
                   }`}
+                  onClick={() => setIsSidebarOpen(false)}
                 >
                   Dashboard
                 </Link>
@@ -113,8 +148,9 @@ export default function AdminLayout({ children }) {
                   className={`block py-2 px-4 rounded ${
                     pathname === "/admin/products"
                       ? "bg-blue-700"
-                      : "hover:bg-blue-700"
+                      : "hover:bg-blue-700 transition duration-200"
                   }`}
+                  onClick={() => setIsSidebarOpen(false)}
                 >
                   Manage Products
                 </Link>
@@ -125,8 +161,9 @@ export default function AdminLayout({ children }) {
                   className={`block py-2 px-4 rounded ${
                     pathname === "/admin/orders"
                       ? "bg-blue-700"
-                      : "hover:bg-blue-700"
+                      : "hover:bg-blue-700 transition duration-200"
                   }`}
+                  onClick={() => setIsSidebarOpen(false)}
                 >
                   Manage Orders
                 </Link>
@@ -137,8 +174,9 @@ export default function AdminLayout({ children }) {
                   className={`block py-2 px-4 rounded ${
                     pathname === "/admin/users"
                       ? "bg-blue-700"
-                      : "hover:bg-blue-700"
+                      : "hover:bg-blue-700 transition duration-200"
                   }`}
+                  onClick={() => setIsSidebarOpen(false)}
                 >
                   Manage Users
                 </Link>
@@ -146,7 +184,14 @@ export default function AdminLayout({ children }) {
             </ul>
           </nav>
         </aside>
-        <main className="flex-1 p-6 ml-64 bg-gray-100">{children}</main>
+
+        <main
+          className={`flex-1 p-6 bg-gray-100 transition-all duration-300 ease-in-out ${
+            isSidebarOpen ? "ml-0 md:ml-64" : "ml-0 md:ml-64"
+          }`}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );
