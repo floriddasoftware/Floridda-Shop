@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css";
 import BackToTop from "@/components/BackToTop";
 import { ToastContainer } from "react-toastify";
