@@ -35,7 +35,10 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!emailExists || !password) return;
+    if (!emailExists || !password) {
+      setError("Please fill in all fields correctly.");
+      return;
+    }
     setError("");
     setLoading(true);
 
@@ -75,10 +78,10 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-gray-800 text-center mb-8">
             Login
           </h1>
-          <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label className="block text-gray-700 mb-2">
-                Email Address *
+                Email Address <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
@@ -91,7 +94,9 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-gray-700 mb-2">Password *</label>
+              <label className="block text-gray-700 mb-2">
+                Password <span className="text-red-500">*</span>
+              </label>
               <input
                 type="password"
                 value={password}
@@ -118,9 +123,9 @@ export default function LoginPage() {
             </div>
             <button
               type="submit"
-              disabled={!emailExists || !password || loading}
+              disabled={loading || !emailExists || !password}
               className={`w-full py-3 rounded-lg transition duration-300 ${
-                !emailExists || !password || loading
+                loading || !emailExists || !password
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-blue-500 text-white hover:bg-blue-600"
               }`}

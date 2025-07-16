@@ -13,8 +13,8 @@ export default function ShopClient({ products }) {
   const storages = [...new Set(products.map((product) => product.storage))];
 
   return (
-    <div className="flex flex-col md:flex-row">
-      <div className="md:w-1/4 mb-8 md:mb-0">
+    <div className="flex flex-col lg:flex-row">
+      <div className="lg:w-1/4 mb-8 lg:mb-0">
         <div className="bg-white rounded-lg shadow p-4 sticky top-24">
           <h2 className="text-lg font-bold text-text mb-4">Filter by Brand</h2>
           {brands.length === 0 ? (
@@ -60,7 +60,7 @@ export default function ShopClient({ products }) {
           )}
         </div>
       </div>
-      <div className="md:w-3/4 md:pl-8">
+      <div className="lg:w-3/4 lg:pl-8">
         <div className="mb-6">
           <input
             type="text"
@@ -70,8 +70,8 @@ export default function ShopClient({ products }) {
             className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           />
         </div>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <h1 className="text-2xl font-bold text-text mb-4 md:mb-0">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+          <h1 className="text-2xl font-bold text-text mb-4 lg:mb-0">
             Smartphone Collection
           </h1>
           <div className="text-text text-sm">

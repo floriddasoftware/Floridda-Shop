@@ -1,9 +1,10 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
+import Link from "next/link";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,6 +34,7 @@ export default function ResetPasswordPage() {
           router.push("/login");
         });
     } else {
+      toast.error("No token provided.");
       router.push("/login");
     }
   }, [token, router]);
@@ -68,7 +70,13 @@ export default function ResetPasswordPage() {
     }
   };
 
-  if (!tokenValid) return null;
+  if (!tokenValid) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">Validating token...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -79,7 +87,9 @@ export default function ResetPasswordPage() {
           </h1>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label className="block text-gray-700 mb-2">New Password *</label>
+              <label className="block text-gray-700 mb-2">
+                New Password <span className="text-red-500">*</span>
+              </label>
               <input
                 type="password"
                 value={password}
@@ -92,7 +102,7 @@ export default function ResetPasswordPage() {
             </div>
             <div>
               <label className="block text-gray-700 mb-2">
-                Confirm Password *
+                Confirm Password <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
@@ -116,8 +126,27 @@ export default function ResetPasswordPage() {
               {loading ? "Resetting..." : "Reset Password"}
             </button>
           </form>
+          <div className="mt-6 text-center">
+            <Link href="/login" className="text-blue-500 hover:underline">
+              Back to Login
+            </Link>
+          </div>
         </div>
       </main>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

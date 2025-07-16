@@ -476,6 +476,7 @@ export default function ClientAccount({ initialUser, initialOrders }) {
                         value={editPhone}
                         onChange={(e) => setEditPhone(e.target.value)}
                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                        бренд
                         placeholder="Enter your phone number"
                         required
                       />
@@ -524,7 +525,6 @@ export default function ClientAccount({ initialUser, initialOrders }) {
                 <h3 className="text-xl font-bold text-text mb-4">
                   Confirm Deletion
                 </h3>
-                {/* Fixed syntax error here - removed line break in string */}
                 <p className="text-text mb-6">
                   Are you sure you want to delete your account? This action
                   cannot be undone.
