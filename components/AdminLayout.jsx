@@ -10,39 +10,46 @@ export default function AdminLayout({ children }) {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   useEffect(() => {
     const verifyAdmin = async () => {
       const token = getAuthToken();
       if (!token) {
-        router.push("/login");
+        router.push("/ login");
         return;
       }
-
       try {
         const response = await fetch("/api/verify-admin", {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (response.ok) {
-          setIsAdmin(true);
-        } else {
-          const errorData = await response.json();
-          toast.error(errorData.message || "Admin access denied");
+        if (response.ok) setIsAdmin(true);
+        else {
+          toast.error("Admin access denied");
           router.push("/");
         }
       } catch (error) {
-        console.error("Admin verification error:", error);
         toast.error("Connection error");
         router.push("/login");
       } finally {
         setLoading(false);
       }
     };
-
     verifyAdmin();
   }, [router]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsSidebarCollapsed(false);
+      } else {
+        setIsSidebarCollapsed(true);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleLogout = () => {
     clearAuthToken();
@@ -52,25 +59,22 @@ export default function AdminLayout({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Verifying admin access...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        Verifying...
       </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white p-8 rounded-lg shadow-md max-w-md text-center">
           <h2 className="text-2xl font-bold text-red-500 mb-4">
             Access Denied
           </h2>
-          <p className="text-gray-700 mb-6">
-            You don&apos;t have permission to access this page
-          </p>
           <button
             onClick={() => router.push("/")}
-            className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition duration-300"
+            className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
           >
             Return to Home
           </button>
@@ -81,25 +85,23 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
-      <header className="bg-blue-900 text-white p-4 fixed top-0 left-0 right-0 z-20 shadow-md">
+      <header className="bg-blue-900 text-white p-4 fixed top-0 left-0 right-0 z-30 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-          <Link href="/admin" className="text-2xl font-bold">
+          <Link href="/admin" className="text-xl font-bold sm:text-2xl">
             Admin Dashboard
           </Link>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <button
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-300"
+              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base"
             >
               Logout
             </button>
             <button
-              className="md:hidden text-white focus:outline-none"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              aria-label="Toggle sidebar"
+              className="text-white focus:outline-none lg:hidden p-2"
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             >
               <svg
-                xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -110,9 +112,9 @@ export default function AdminLayout({ children }) {
                   strokeLinejoin="round"
                   strokeWidth={2}
                   d={
-                    isSidebarOpen
-                      ? "M6 18L18 6M6 6l12 12"
-                      : "M4 6h16M4 12h16M4 18h16"
+                    isSidebarCollapsed
+                      ? "M4 6h16M4 12h16M4 18h16"
+                      : "M6 18L18 6M6 6l12 12"
                   }
                 />
               </svg>
@@ -123,74 +125,72 @@ export default function AdminLayout({ children }) {
 
       <div className="flex flex-1 pt-16">
         <aside
-          className={`w-64 bg-blue-800 text-white p-4 fixed top-16 bottom-0 overflow-y-auto shadow-lg transform transition-transform duration-300 ease-in-out z-10 ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } md:translate-x-0 md:static md:w-64`}
+          className={`bg-blue-800 text-white p-4 fixed top-16 bottom-0 overflow-y-auto shadow-lg z-20
+            ${isSidebarCollapsed ? "w-12" : "w-40"} lg:w-40 lg:static`}
         >
           <nav>
             <ul className="space-y-4">
-              <li>
-                <Link
-                  href="/admin"
-                  className={`block py-2 px-4 rounded ${
-                    pathname === "/admin"
-                      ? "bg-blue-700"
-                      : "hover:bg-blue-700 transition duration-200"
-                  }`}
-                  onClick={() => setIsSidebarOpen(false)}
-                >
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/products"
-                  className={`block py-2 px-4 rounded ${
-                    pathname === "/admin/products"
-                      ? "bg-blue-700"
-                      : "hover:bg-blue-700 transition duration-200"
-                  }`}
-                  onClick={() => setIsSidebarOpen(false)}
-                >
-                  Manage Products
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/orders"
-                  className={`block py-2 px-4 rounded ${
-                    pathname === "/admin/orders"
-                      ? "bg-blue-700"
-                      : "hover:bg-blue-700 transition duration-200"
-                  }`}
-                  onClick={() => setIsSidebarOpen(false)}
-                >
-                  Manage Orders
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin/users"
-                  className={`block py-2 px-4 rounded ${
-                    pathname === "/admin/users"
-                      ? "bg-blue-700"
-                      : "hover:bg-blue-700 transition duration-200"
-                  }`}
-                  onClick={() => setIsSidebarOpen(false)}
-                >
-                  Manage Users
-                </Link>
-              </li>
+              {[
+                {
+                  path: "/admin",
+                  label: "Dashboard",
+                  icon: "M3 12h18M3 6h18M3 18h18",
+                },
+                {
+                  path: "/admin/products",
+                  label: "Manage Products",
+                  icon: "M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2",
+                },
+                {
+                  path: "/admin/orders",
+                  label: "Manage Orders",
+                  icon: "M3 3h18v18H3z",
+                },
+                {
+                  path: "/admin/users",
+                  label: "Manage Users",
+                  icon: "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z",
+                },
+              ].map((item) => (
+                <li key={item.path}>
+                  <Link
+                    href={item.path}
+                    className={`flex items-center py-2 px-2 rounded text-sm sm:text-base
+                      ${
+                        pathname === item.path
+                          ? "bg-blue-700"
+                          : "hover:bg-blue-700"
+                      }`}
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d={item.icon}
+                      />
+                    </svg>
+                    {!isSidebarCollapsed && (
+                      <span className="ml-3">{item.label}</span>
+                    )}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
         </aside>
 
+        {/* Main Content */}
         <main
-          className={`flex-1 p-6 bg-gray-100 transition-all duration-300 ease-in-out ${
-            isSidebarOpen ? "ml-0 md:ml-64" : "ml-0 md:ml-64"
-          }`}
+          className={`flex-1 p-4 sm:p-6 bg-gray-100 min-h-[calc(100vh-4rem)] overflow-y-auto
+            ${isSidebarCollapsed ? "ml-12" : "ml-40"} lg:ml-40`}
         >
-          {children}
+          <div className="container mx-auto">{children}</div>
         </main>
       </div>
     </div>
